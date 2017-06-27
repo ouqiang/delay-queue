@@ -12,3 +12,13 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+
+# PHPStorm
+.idea
+
+# project
+delay-queue
+main
+node_modules
+package.json
