@@ -5,11 +5,11 @@ import "testing"
 func TestJob (t *testing.T) {
     key := "putjob"
     value := "putjob-value"
-    err := PutJob(key, value)
+    err := putJob(key, value)
     if err != nil {
         t.Fail()
     }
-    newValue, err := GetJob(key)
+    newValue, err := getJob(key)
     if err != nil {
         t.Fail()
     }
@@ -17,7 +17,7 @@ func TestJob (t *testing.T) {
         t.Fail()
     }
 
-    err = RemoveJob(key)
+    err = removeJob(key)
     if err != nil {
         t.Fail()
     }

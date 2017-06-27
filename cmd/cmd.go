@@ -7,10 +7,7 @@ import (
     "net/http"
     "github.com/ouqiang/delay-queue/config"
     "github.com/ouqiang/delay-queue/routers"
-    "github.com/ouqiang/delay-queue/dealyqueue"
-    "syscall"
-    "os/signal"
-    "log"
+    "github.com/ouqiang/delay-queue/delayqueue"
 )
 
 type Cmd struct {}
@@ -36,9 +33,6 @@ func (cmd *Cmd) Run()  {
     // 初始化队列
     delayqueue.Init()
 
-    // 捕捉信号
-    go catchSignal();
-
     // 运行web server
     cmd.runWeb()
 }
@@ -58,26 +52,4 @@ func (cmd *Cmd) runWeb()  {
     http.HandleFunc("/delete", routers.Delete)
 
     http.ListenAndServe(config.Setting.BindAddress, nil)
-}
-
-// 捕捉信号
-func catchSignal()  {
-    c := make(chan os.Signal)
-    signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
-    for {
-        s := <- c
-        switch s {
-        case syscall.SIGHUP:
-            log.Println("收到SIGNUP信号, 忽略")
-        case  syscall.SIGINT, syscall.SIGTERM:
-            shutdown()
-        }
-    }
-}
-
-func shutdown()  {
-    // 释放连接池资源
-    delayqueue.RedisPool.Close()
-
-    os.Exit(0)
 }

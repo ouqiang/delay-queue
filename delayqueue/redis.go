@@ -4,6 +4,7 @@ import (
     "time"
     "github.com/ouqiang/delay-queue/config"
     "github.com/garyburd/redigo/redis"
+    "log"
 )
 
 var (
@@ -28,6 +29,7 @@ func initRedisPool() *redis.Pool {
 func redisDial() (redis.Conn, error)  {
     conn, err := redis.Dial("tcp", config.Setting.Redis.Host)
     if err != nil {
+        log.Printf("连接redis失败#%s", err.Error())
         return nil, err
     }
 
@@ -37,6 +39,7 @@ func redisDial() (redis.Conn, error)  {
 
     if _, err := conn.Do("AUTH", config.Setting.Redis.Password); err != nil {
         conn.Close()
+        log.Printf("redis认证失败#%s", err.Error())
         return nil, err
     }
 
