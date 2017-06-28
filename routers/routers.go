@@ -18,8 +18,6 @@ func Push(resp http.ResponseWriter, req *http.Request)  {
         resp.Write(generateFailureBody("读取request body失败"))
         return
     }
-    defer req.Body.Close()
-
     var job delayqueue.Job
     err = json.Unmarshal(body, &job)
     if err != nil {
@@ -42,15 +40,19 @@ func Push(resp http.ResponseWriter, req *http.Request)  {
 
     if job.Delay <= 0 || job.Delay > (1 << 31) {
         resp.Write(generateFailureBody("delay 取值范围1 - (2^31 - 1)"))
+        return
     }
 
     if job.TTR <= 0 || job.TTR > 86400 {
         resp.Write(generateFailureBody("ttr 取值范围1 - 86400"))
+        return
     }
 
     log.Printf("add job#%+v\n", job)
     job.Delay = time.Now().Unix() + job.Delay
     delayqueue.Push(job)
+
+    resp.Write(generateSuccessBody("添加成功", nil))
 }
 
 // 获取job
