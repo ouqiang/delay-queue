@@ -1,0 +1,7 @@
+language: go
+go:
+  - 1.7.x
+
+notifications:
+  on_success: never
+  on_failure: always
