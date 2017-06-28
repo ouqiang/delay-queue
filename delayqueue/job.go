@@ -4,9 +4,9 @@ import "encoding/json"
 
 type Job struct  {
     Topic string `json:"topic"`
-    Id string `json:"id"`
-    Delay int64 `json:"delay"`
-    TTR int `json:"ttr"`
+    Id string `json:"id"`       // job唯一标识ID
+    Delay int64 `json:"delay"`  // 延迟时间, unix时间戳
+    TTR int64 `json:"ttr"`
     Body string `json:"body"`
 }
 

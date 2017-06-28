@@ -5,7 +5,9 @@ import (
     "github.com/ouqiang/delay-queue/config"
     "fmt"
     "log"
-    "strings"
+)
+const (
+    BucketRedisKey = "dq_bucket_%d"
 )
 
 var (
@@ -13,21 +15,20 @@ var (
     timers []*time.Ticker
     // 保存待放入bucket中的job
     queue chan Job
+    // bucket名称chan
+    bucketNameChan chan string
 )
 
 func Init()  {
     RedisPool = initRedisPool()
     initTimers()
     queue = make(chan Job, 100)
+    bucketNameChan = generateBucketName()
     go waitJob()
 }
 
 // 添加一个Job到队列中
 func Push(job Job)  {
-    job.Id = strings.TrimSpace(job.Id)
-    job.Topic = strings.TrimSpace(job.Topic)
-    job.Body = strings.TrimSpace(job.Body)
-
     if job.Id == "" || job.Topic == "" || job.Delay < 0 || job.TTR <= 0 {
         return
     }
@@ -35,12 +36,53 @@ func Push(job Job)  {
     queue <- job
 }
 
+// 获取Job
+func Pop(topic string) (*Job, error) {
+     jobId, err := popFromReadyQueue(topic)
+     if err != nil {
+         return nil, err
+     }
+
+    // 队列为空
+    if jobId == "" {
+        return nil, nil
+    }
+
+    // 获取job元信息
+     job, err := getJob(jobId)
+     if err != nil {
+        return job, err
+    }
+
+    // 消息不存在, 可能已被删除
+    if job == nil {
+        return nil, nil
+    }
+
+    timestamp := time.Now().Unix() + job.TTR
+    err = pushToBucket(<-bucketNameChan, timestamp, job.Id)
+
+    return job, err
+}
+
+// 删除Job
+func Remove(jobId string) error {
+    return removeJob(jobId)
+}
+
+
 func waitJob()  {
-    bucketNameChan := generateBucketName()
+    var err error
     for job := range queue {
-        putJob(job.Id, job)
-        delayTimestamp := time.Now().Unix() + job.Delay
-        pushToBucket(<-bucketNameChan, delayTimestamp, job.Id)
+        err = putJob(job.Id, job)
+        if err != nil {
+            log.Printf("添加job到job pool失败#job-%+v#%s", job, err.Error())
+            continue
+        }
+        err = pushToBucket(<-bucketNameChan, job.Delay, job.Id)
+        if err != nil {
+            log.Printf("添加job到bucket失败#job-%+v#%s", job, err.Error())
+        }
     }
 }
 
@@ -50,7 +92,7 @@ func generateBucketName() (chan string) {
     go func() {
         i := 1
         for {
-            c <- fmt.Sprintf("dq_bucket_%d", i)
+            c <- fmt.Sprintf(BucketRedisKey, i)
             if i >= config.Setting.Bucket {
                 i = 1
             } else {
@@ -68,7 +110,7 @@ func initTimers()  {
     var bucketName string
     for i := 0; i < config.Setting.Bucket; i++ {
         timers[i] = time.NewTicker(1 * time.Second)
-        bucketName = fmt.Sprintf("dq_bucket_%d", i + 1)
+        bucketName = fmt.Sprintf(BucketRedisKey, i + 1)
         go waitTicker(timers[i], bucketName)
     }
 }
@@ -105,17 +147,32 @@ func tickHandler(t time.Time, bucketName string)  {
         job, err := getJob(bucketItem.jobId)
         if err != nil {
             log.Printf("获取Job元信息失败#bucket-%s#%s", bucketName, err.Error())
+            continue
         }
 
-        err = pushToReadyQueue(job.Topic, job.Id)
+        // job元信息不存在, 从bucket中删除
+        if job == nil {
+            removeFromBucket(bucketName, bucketItem.jobId)
+            continue
+        }
+
+        // 再次确认元信息中delay是否小于等于当前时间
+        if job.Delay > t.Unix() {
+            // 重新计算delay时间并放入bucket中
+            pushToBucket(<-bucketNameChan, job.Delay, bucketItem.jobId)
+            // 从bucket中删除之前的bucket
+            removeFromBucket(bucketName, bucketItem.jobId)
+            continue
+        }
+
+        err = pushToReadyQueue(job.Topic, bucketItem.jobId)
         if err != nil {
             log.Printf("JobId放入ready queue失败#bucket-%s#job-%+v#%s",
                 bucketName, job, err.Error())
-            return
+            continue
         }
 
         // 从bucket中删除
-
-        removeFromBucket(bucketName, job.Id)
+        removeFromBucket(bucketName, bucketItem.jobId)
     }
 }

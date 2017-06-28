@@ -33,14 +33,17 @@ func redisDial() (redis.Conn, error)  {
         return nil, err
     }
 
-    if (config.Setting.Redis.Password == "") {
-       return conn, err
+    if (config.Setting.Redis.Password != "") {
+        if _, err := conn.Do("AUTH", config.Setting.Redis.Password); err != nil {
+            conn.Close()
+            log.Printf("redis认证失败#%s", err.Error())
+            return nil, err
+        }
     }
 
-    if _, err := conn.Do("AUTH", config.Setting.Redis.Password); err != nil {
-        conn.Close()
-        log.Printf("redis认证失败#%s", err.Error())
-        return nil, err
+    _, err = conn.Do("SELECT", config.Setting.Redis.Db)
+    if err != nil {
+        log.Printf("redis选择数据库失败#%s", err.Error())
     }
 
     return conn, err
