@@ -10,19 +10,20 @@ import (
     "strings"
 )
 
+type PopRequest struct {
+    Topic string `json:"topic"`
+}
+
+type DeleteRequest struct {
+    Id string `json:"id"`
+}
+
+
 // 添加job
 func Push(resp http.ResponseWriter, req *http.Request)  {
-    body, err := ioutil.ReadAll(req.Body)
-    if err != nil {
-        log.Printf("读取body错误#%s", err.Error())
-        resp.Write(generateFailureBody("读取request body失败"))
-        return
-    }
     var job delayqueue.Job
-    err = json.Unmarshal(body, &job)
+    err := readBody(resp, req, &job)
     if err != nil {
-        log.Printf("解析json失败#%s", err.Error())
-        resp.Write(generateFailureBody("解析json失败"))
         return
     }
 
@@ -57,8 +58,12 @@ func Push(resp http.ResponseWriter, req *http.Request)  {
 
 // 获取job
 func Pop(resp http.ResponseWriter, req *http.Request)  {
-    topic := req.PostFormValue("topic")
-    topic = strings.TrimSpace(topic)
+    var popRequest PopRequest
+    err := readBody(resp, req, &popRequest)
+    if err != nil {
+        return
+    }
+    topic := strings.TrimSpace(popRequest.Topic)
     if topic == "" {
         resp.Write(generateFailureBody("topic不能为空"))
         return
@@ -91,14 +96,18 @@ func Pop(resp http.ResponseWriter, req *http.Request)  {
 
 // 删除job
 func Delete(resp http.ResponseWriter, req *http.Request)  {
-    id := req.PostFormValue("id")
-    id = strings.TrimSpace(id)
+    var deleteRequest DeleteRequest
+    err := readBody(resp, req, &deleteRequest)
+    if err != nil {
+        return
+    }
+    id := strings.TrimSpace(deleteRequest.Id)
     if id == "" {
         resp.Write(generateFailureBody("job id不能为空"))
         return
     }
 
-    err := delayqueue.Remove(id)
+    err = delayqueue.Remove(id)
     if err != nil {
         resp.Write(generateFailureBody("删除失败"))
         return
@@ -112,6 +121,23 @@ type ResponseBody struct {
     Code int       `json:"code"`
     Message string `json:"message"`
     Data interface{} `json:"data"`
+}
+
+func readBody(resp http.ResponseWriter, req *http.Request, v interface{}) error {
+    body, err := ioutil.ReadAll(req.Body)
+    if err != nil {
+        log.Printf("读取body错误#%s", err.Error())
+        resp.Write(generateFailureBody("读取request body失败"))
+        return err
+    }
+    err = json.Unmarshal(body, v)
+    if err != nil {
+        log.Printf("解析json失败#%s", err.Error())
+        resp.Write(generateFailureBody("解析json失败"))
+        return err
+    }
+
+    return nil
 }
 
 func generateSuccessBody(msg string, data interface{}) ([]byte)  {
