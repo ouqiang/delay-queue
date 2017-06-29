@@ -15,7 +15,7 @@
 
 
 ## 运行
-`./delay-queue -c delay-queue.conf`
+`./delay-queue -c delay-queue.conf`, 默认监听 `0.0.0.0:9277`
 
 ## HTTP接口
 
