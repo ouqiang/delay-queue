@@ -17,11 +17,11 @@ const (
     DefaultRedisHost = "127.0.0.1:6379"
     DefaultRedisDb = 1
     DefaultRedisPassword = ""
-    DefaultRedisMaxIdle = 30
+    DefaultRedisMaxIdle = 10
     DefaultRedisMaxActive = 0
     DefaultRedisConnectTimeout = 5
-    DefaultRedisReadTimeout = 1
-    DefaultRedisWriteTimeout = 1
+    DefaultRedisReadTimeout = 3
+    DefaultRedisWriteTimeout = 3
 )
 
 type Config struct {

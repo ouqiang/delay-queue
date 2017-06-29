@@ -15,7 +15,7 @@
 
 
 ## 运行
-`./delay-queue -c delay-queue.conf`, 默认监听 `0.0.0.0:9277`
+`./delay-queue -c delay-queue.conf`
 
 ## HTTP接口
 
@@ -56,7 +56,8 @@ URL地址 `/push`
 |   ttr  | int        |    Job执行超时时间, 单位：秒   |                   |
 |   body   | string     |    Job的内容，供消费者做具体的业务处理，如果是json格式需转义 |                   |
 
-### 获取ready queue中的任务    
+### 长轮询ready queue是否有任务, 有任务立即返回或等待180秒后超时返回   
+URL地址 `/pop`    
 ```json
 {
   "topic": "order"

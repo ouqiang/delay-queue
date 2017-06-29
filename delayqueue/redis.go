@@ -63,6 +63,9 @@ func redisTestOnBorrow(conn redis.Conn, t time.Time) error {
         return nil
     }
     _, err := conn.Do("PING")
+    if err != nil {
+        log.Printf("从redis连接池取出的连接无效#%s", err.Error())
+    }
 
     return err
 }
