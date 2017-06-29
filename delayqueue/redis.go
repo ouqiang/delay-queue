@@ -27,7 +27,13 @@ func initRedisPool() *redis.Pool {
 
 // 连接redis
 func redisDial() (redis.Conn, error)  {
-    conn, err := redis.Dial("tcp", config.Setting.Redis.Host)
+    conn, err := redis.Dial(
+            "tcp",
+            config.Setting.Redis.Host,
+            redis.DialConnectTimeout(time.Duration(config.Setting.Redis.ConnectTimeout) * time.Second),
+            redis.DialReadTimeout(time.Duration(config.Setting.Redis.ReadTimeout) * time.Second),
+            redis.DialWriteTimeout(time.Duration(config.Setting.Redis.WriteTimeout) * time.Second),
+    )
     if err != nil {
         log.Printf("连接redis失败#%s", err.Error())
         return nil, err
@@ -43,10 +49,12 @@ func redisDial() (redis.Conn, error)  {
 
     _, err = conn.Do("SELECT", config.Setting.Redis.Db)
     if err != nil {
+        conn.Close()
         log.Printf("redis选择数据库失败#%s", err.Error())
+        return nil, err
     }
 
-    return conn, err
+    return conn, nil
 }
 
 // 从池中取出连接后，判断连接是否有效

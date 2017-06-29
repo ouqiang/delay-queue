@@ -9,6 +9,7 @@ import (
     "github.com/ouqiang/delay-queue/delayqueue"
     "log"
     "fmt"
+    _ "net/http/pprof"
 )
 
 type Cmd struct {}

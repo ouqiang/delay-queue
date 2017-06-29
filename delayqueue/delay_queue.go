@@ -5,6 +5,7 @@ import (
     "github.com/ouqiang/delay-queue/config"
     "fmt"
     "log"
+    "errors"
 )
 const (
     BucketRedisKey = "dq_bucket_%d"
@@ -13,8 +14,6 @@ const (
 var (
     // 每个定时器对应一个bucket
     timers []*time.Ticker
-    // 保存待放入bucket中的job
-    queue chan Job
     // bucket名称chan
     bucketNameChan chan string
 )
@@ -22,18 +21,27 @@ var (
 func Init()  {
     RedisPool = initRedisPool()
     initTimers()
-    queue = make(chan Job, 100)
     bucketNameChan = generateBucketName()
-    go waitJob()
 }
 
 // 添加一个Job到队列中
-func Push(job Job)  {
+func Push(job Job) error {
     if job.Id == "" || job.Topic == "" || job.Delay < 0 || job.TTR <= 0 {
-        return
+        return errors.New("invalid job")
     }
 
-    queue <- job
+    err := putJob(job.Id, job)
+    if err != nil {
+        log.Printf("添加job到job pool失败#job-%+v#%s", job, err.Error())
+        return err
+    }
+    err = pushToBucket(<-bucketNameChan, job.Delay, job.Id)
+    if err != nil {
+        log.Printf("添加job到bucket失败#job-%+v#%s", job, err.Error())
+        return err
+    }
+
+    return nil
 }
 
 // 获取Job
@@ -68,22 +76,6 @@ func Pop(topic string) (*Job, error) {
 // 删除Job
 func Remove(jobId string) error {
     return removeJob(jobId)
-}
-
-
-func waitJob()  {
-    var err error
-    for job := range queue {
-        err = putJob(job.Id, job)
-        if err != nil {
-            log.Printf("添加job到job pool失败#job-%+v#%s", job, err.Error())
-            continue
-        }
-        err = pushToBucket(<-bucketNameChan, job.Delay, job.Id)
-        if err != nil {
-            log.Printf("添加job到bucket失败#job-%+v#%s", job, err.Error())
-        }
-    }
 }
 
 // 轮询获取Job名称, 使job分布到不同bucket中, 提高扫描速度
