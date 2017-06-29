@@ -3,9 +3,7 @@
 
 
 ## 下载
-* [Linux-64位](http://opns468ov.bkt.clouddn.com/delay-queue-linux-amd64.tar.gz)
-* [Mac OS-64位](http://opns468ov.bkt.clouddn.com/delay-queue-darwin-amd64.tar.gz)
-* [Windows-64位](http://opns468ov.bkt.clouddn.com/delay-queue-windows-amd64.zip)
+[v0.1](https://github.com/ouqiang/delay-queue/releases/tag/v0.1)
 
 
 ## 源码安装
