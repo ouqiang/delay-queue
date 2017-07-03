@@ -15,6 +15,22 @@
 			"revisionTime": "2017-06-15T18:53:09Z"
 		},
 		{
+			"checksumSHA1": "ddHQ3AbnzgLL4tpi6FEEWArLCIk=",
+			"path": "github.com/vmihailenco/msgpack",
+			"revision": "d91c9f43689d8565046de42f51a19bb80ebb8360",
+			"revisionTime": "2017-06-22T07:12:44Z"
+		},
+		{
+			"checksumSHA1": "tOMrkwvdZiNeJDeT/Cjuo7fCpg0=",
+			"path": "github.com/vmihailenco/msgpack/codes",
+			"revision": "d91c9f43689d8565046de42f51a19bb80ebb8360",
+			"revisionTime": "2017-06-22T07:12:44Z"
+		},
+		{
+			"path": "google.golang.org/appengine/datastore",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "WNjUTH01NMhPWjpwnsaL3SW52Gw=",
 			"path": "gopkg.in/ini.v1",
 			"revision": "d3de07a94d22b4a0972deb4b96d790c2c0ce8333",

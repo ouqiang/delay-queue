@@ -1,6 +1,8 @@
 package delayqueue
 
-import "encoding/json"
+import (
+    "github.com/vmihailenco/msgpack"
+)
 
 type Job struct  {
     Topic string `json:"topic"`
@@ -22,7 +24,7 @@ func getJob(key string) (*Job, error)  {
 
     byteValue := value.([]byte)
     job := &Job{}
-    err = json.Unmarshal(byteValue, job)
+    err = msgpack.Unmarshal(byteValue, job)
     if err != nil {
         return nil, err
     }
@@ -32,7 +34,7 @@ func getJob(key string) (*Job, error)  {
 
 // 添加Job
 func putJob(key string, job Job) error {
-    value, err := json.Marshal(job)
+    value, err := msgpack.Marshal(job)
     if err != nil {
         return err
     }
