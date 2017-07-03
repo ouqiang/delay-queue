@@ -73,18 +73,11 @@ func Pop(resp http.ResponseWriter, req *http.Request)  {
         return
     }
 
-    // 轮询队列是否有任务, 有任务立即返回或180秒后超时返回
-    var job *delayqueue.Job = nil
-    waitTimeout := time.Now().Unix() + 180
-    for time.Now().Unix() < waitTimeout {
-        job, err = delayqueue.Pop(topic)
-        if job != nil && err == nil {
-            break
-        }
-        if err != nil {
-            log.Printf("获取job失败#%s", err.Error())
-        }
-        time.Sleep(1 * time.Second)
+    job, err := delayqueue.Pop(topic)
+    if err != nil {
+        log.Printf("获取job失败#%s", err.Error())
+        resp.Write(generateFailureBody("获取Job失败"))
+        return
     }
 
     if job == nil {
@@ -102,7 +95,7 @@ func Pop(resp http.ResponseWriter, req *http.Request)  {
         Body: job.Body,
     }
 
-    log.Printf("获取job#%+v", data)
+    log.Printf("get job#%+v", data)
 
     resp.Write(generateSuccessBody("操作成功", data))
 }

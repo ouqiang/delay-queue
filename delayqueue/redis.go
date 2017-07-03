@@ -30,9 +30,9 @@ func redisDial() (redis.Conn, error)  {
     conn, err := redis.Dial(
             "tcp",
             config.Setting.Redis.Host,
-            redis.DialConnectTimeout(time.Duration(config.Setting.Redis.ConnectTimeout) * time.Second),
-            redis.DialReadTimeout(time.Duration(config.Setting.Redis.ReadTimeout) * time.Second),
-            redis.DialWriteTimeout(time.Duration(config.Setting.Redis.WriteTimeout) * time.Second),
+            redis.DialConnectTimeout(time.Duration(config.Setting.Redis.ConnectTimeout) * time.Millisecond),
+            redis.DialReadTimeout(time.Duration(config.Setting.Redis.ReadTimeout) * time.Millisecond),
+            redis.DialWriteTimeout(time.Duration(config.Setting.Redis.WriteTimeout) * time.Millisecond),
     )
     if err != nil {
         log.Printf("连接redis失败#%s", err.Error())

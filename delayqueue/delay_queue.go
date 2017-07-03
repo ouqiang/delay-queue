@@ -7,15 +7,12 @@ import (
     "log"
     "errors"
 )
-const (
-    BucketRedisKey = "dq_bucket_%d"
-)
 
 var (
     // 每个定时器对应一个bucket
     timers []*time.Ticker
     // bucket名称chan
-    bucketNameChan chan string
+    bucketNameChan <- chan string
 )
 
 func Init()  {
@@ -46,7 +43,7 @@ func Push(job Job) error {
 
 // 获取Job
 func Pop(topic string) (*Job, error) {
-     jobId, err := popFromReadyQueue(topic)
+     jobId, err := blockPopFromReadyQueue(topic, config.Setting.QueueBlockTimeout)
      if err != nil {
          return nil, err
      }
@@ -79,13 +76,13 @@ func Remove(jobId string) error {
 }
 
 // 轮询获取Job名称, 使job分布到不同bucket中, 提高扫描速度
-func generateBucketName() (chan string) {
+func generateBucketName() (<- chan string) {
     c := make(chan string)
     go func() {
         i := 1
         for {
-            c <- fmt.Sprintf(BucketRedisKey, i)
-            if i >= config.Setting.Bucket {
+            c <- fmt.Sprintf(config.Setting.BucketName, i)
+            if i >= config.Setting.BucketSize {
                 i = 1
             } else {
                 i++
@@ -98,11 +95,11 @@ func generateBucketName() (chan string) {
 
 // 初始化定时器
 func initTimers()  {
-    timers = make([]*time.Ticker, config.Setting.Bucket)
+    timers = make([]*time.Ticker, config.Setting.BucketSize)
     var bucketName string
-    for i := 0; i < config.Setting.Bucket; i++ {
+    for i := 0; i < config.Setting.BucketSize; i++ {
         timers[i] = time.NewTicker(1 * time.Second)
-        bucketName = fmt.Sprintf(BucketRedisKey, i + 1)
+        bucketName = fmt.Sprintf(config.Setting.BucketName, i + 1)
         go waitTicker(timers[i], bucketName)
     }
 }

@@ -13,7 +13,9 @@
 
 
 ## 运行
-`./delay-queue -c delay-queue.conf`  默认监听`0.0.0.0:9277`   
+`./delay-queue -c delay-queue.conf`  
+> HTTP Server监听`0.0.0.0:9277`, Redis连接地址`127.0.0.1:6379`, 数据库编号`1`
+   
 
 ## HTTP接口
 

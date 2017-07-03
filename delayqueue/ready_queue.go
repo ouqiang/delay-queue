@@ -1,23 +1,34 @@
 package delayqueue
 
+import (
+    "fmt"
+    "github.com/ouqiang/delay-queue/config"
+)
 
 type ReadyQueue struct {}
 
 func pushToReadyQueue(queueName string, jobId string) error {
+    queueName = fmt.Sprintf(config.Setting.QueueName, queueName)
     _, err := execRedisCommand("RPUSH", queueName, jobId)
 
     return err
 }
 
-func popFromReadyQueue(queueName string) (string, error){
-    value, err := execRedisCommand("LPOP", queueName)
+func blockPopFromReadyQueue(queueName string, timeout int) (string, error){
+    queueName = fmt.Sprintf(config.Setting.QueueName, queueName)
+    value, err := execRedisCommand("BLPOP", queueName, timeout)
     if err != nil {
         return "", err
     }
     if value == nil {
         return "", nil
     }
-    byteValue := value.([]byte)
+    var valueBytes []interface{}
+    valueBytes = value.([]interface{})
+    if len(valueBytes) == 0 {
+        return "", nil
+    }
+    element := string(valueBytes[1].([]byte))
 
-    return string(byteValue), nil
+    return element, nil
 }
