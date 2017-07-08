@@ -20,10 +20,11 @@ var (
 )
 
 const (
-    AppVersion = "0.1"
+    AppVersion = "0.2"
 )
 
 func (cmd *Cmd) Run()  {
+
     // 解析命令行参数
     cmd.parseCommandArgs();
     if version {
