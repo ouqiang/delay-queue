@@ -30,7 +30,7 @@
 * Redis
 
 ## 下载
-[v0.2](https://github.com/ouqiang/delay-queue/releases/tag/v0.1)
+[v0.2](https://github.com/ouqiang/delay-queue/releases/tag/v0.2)
 
 
 ## 源码安装
