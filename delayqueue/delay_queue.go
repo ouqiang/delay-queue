@@ -42,8 +42,8 @@ func Push(job Job) error {
 }
 
 // 获取Job
-func Pop(topic string) (*Job, error) {
-     jobId, err := blockPopFromReadyQueue(topic, config.Setting.QueueBlockTimeout)
+func Pop(topics []string) (*Job, error) {
+     jobId, err := blockPopFromReadyQueue(topics, config.Setting.QueueBlockTimeout)
      if err != nil {
          return nil, err
      }

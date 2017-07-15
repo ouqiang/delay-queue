@@ -72,8 +72,9 @@ func Pop(resp http.ResponseWriter, req *http.Request)  {
         resp.Write(generateFailureBody("topic不能为空"))
         return
     }
-
-    job, err := delayqueue.Pop(topic)
+    // 多个topic逗号分隔
+    topics := strings.Split(topic, ",")
+    job, err := delayqueue.Pop(topics)
     if err != nil {
         log.Printf("获取job失败#%s", err.Error())
         resp.Write(generateFailureBody("获取Job失败"))

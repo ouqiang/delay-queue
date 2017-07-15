@@ -14,9 +14,14 @@ func pushToReadyQueue(queueName string, jobId string) error {
     return err
 }
 
-func blockPopFromReadyQueue(queueName string, timeout int) (string, error){
-    queueName = fmt.Sprintf(config.Setting.QueueName, queueName)
-    value, err := execRedisCommand("BLPOP", queueName, timeout)
+func blockPopFromReadyQueue(queues []string, timeout int) (string, error){
+    var args []interface{}
+    for _, queue := range queues {
+        queue = fmt.Sprintf(config.Setting.QueueName, queue)
+        args = append(args, queue)
+    }
+    args = append(args, timeout)
+    value, err := execRedisCommand("BLPOP", args...)
     if err != nil {
         return "", err
     }
