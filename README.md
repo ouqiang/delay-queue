@@ -6,8 +6,8 @@
 * 订单完成后, 如果用户一直未评价, 5天后自动好评
 * 会员到期前15天, 到期前3天分别发送短信提醒
 
-## 猜想
-支付宝异步通知时间间隔是如何实现的(通知的间隔频率一般是：2m,10m,10m,1h,2h,6h,15h)  
+## 支付宝异步通知实现
+支付宝异步通知时间间隔是如何实现的(通知的间隔频率一般是：2m,10m,10m,1h,2h,6h,15h)  
  
 订单支付成功后, 生成通知任务, 放入消息队列中.    
 任务内容包含Array{0,0,2m,10m,10m,1h,2h,6h,15h}和通知到第几次N(这里N=1, 即第1次).    
@@ -30,7 +30,7 @@
 * Redis
 
 ## 下载
-[v0.2](https://github.com/ouqiang/delay-queue/releases/tag/v0.2)
+[v0.3](https://github.com/ouqiang/delay-queue/releases/tag/v0.3)
 
 
 ## 源码安装
@@ -42,6 +42,9 @@
 ## 运行
 `./delay-queue -c delay-queue.conf`  
 > HTTP Server监听`0.0.0.0:9277`, Redis连接地址`127.0.0.1:6379`, 数据库编号`1`
+
+## 客户端
+[PHP](https://github.com/ouqiang/delayqueue-php)
 
 ## HTTP接口
 
