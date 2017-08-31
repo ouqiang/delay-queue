@@ -20,7 +20,7 @@ var (
 )
 
 const (
-    AppVersion = "0.2"
+    AppVersion = "0.3"
 )
 
 func (cmd *Cmd) Run()  {

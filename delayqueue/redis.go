@@ -59,9 +59,6 @@ func redisDial() (redis.Conn, error)  {
 
 // 从池中取出连接后，判断连接是否有效
 func redisTestOnBorrow(conn redis.Conn, t time.Time) error {
-    if time.Since(t) < time.Minute {
-        return nil
-    }
     _, err := conn.Do("PING")
     if err != nil {
         log.Printf("从redis连接池取出的连接无效#%s", err.Error())
