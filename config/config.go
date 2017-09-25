@@ -1,8 +1,9 @@
 package config
 
 import (
-	"gopkg.in/ini.v1"
 	"log"
+
+	"gopkg.in/ini.v1"
 )
 
 // 解析配置文件
