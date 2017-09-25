@@ -2,6 +2,7 @@ package delayqueue
 
 import (
 	"fmt"
+
 	"github.com/ouqiang/delay-queue/config"
 )
 

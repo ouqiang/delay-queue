@@ -1,10 +1,11 @@
 package delayqueue
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"github.com/ouqiang/delay-queue/config"
 	"log"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
+	"github.com/ouqiang/delay-queue/config"
 )
 
 var (

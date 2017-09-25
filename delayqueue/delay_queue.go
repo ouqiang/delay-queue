@@ -3,9 +3,10 @@ package delayqueue
 import (
 	"errors"
 	"fmt"
-	"github.com/ouqiang/delay-queue/config"
 	"log"
 	"time"
+
+	"github.com/ouqiang/delay-queue/config"
 )
 
 var (
@@ -73,6 +74,20 @@ func Pop(topics []string) (*Job, error) {
 // 删除Job
 func Remove(jobId string) error {
 	return removeJob(jobId)
+}
+
+// 查询Job
+func Get(jobId string) (*Job, error) {
+	job, err := getJob(jobId)
+	if err != nil {
+		return job, err
+	}
+
+	// 消息不存在, 可能已被删除
+	if job == nil {
+		return nil, nil
+	}
+	return job, err
 }
 
 // 轮询获取Job名称, 使job分布到不同bucket中, 提高扫描速度

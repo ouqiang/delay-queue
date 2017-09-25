@@ -2,12 +2,13 @@ package routers
 
 import (
 	"encoding/json"
-	"github.com/ouqiang/delay-queue/delayqueue"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/ouqiang/delay-queue/delayqueue"
 )
 
 type PopRequest struct {
@@ -121,6 +122,45 @@ func Delete(resp http.ResponseWriter, req *http.Request) {
 	log.Printf("delete job#jobId-%s\n", id)
 
 	resp.Write(generateSuccessBody("操作成功", nil))
+}
+
+// 查询job
+func Get(resp http.ResponseWriter, req *http.Request) {
+	var deleteRequest DeleteRequest
+	err := readBody(resp, req, &deleteRequest)
+	if err != nil {
+		return
+	}
+	id := strings.TrimSpace(deleteRequest.Id)
+	if id == "" {
+		resp.Write(generateFailureBody("job id不能为空"))
+		return
+	}
+	job, err := delayqueue.Get(id)
+	if err != nil {
+		log.Printf("查询job失败#%s", err.Error())
+		resp.Write(generateFailureBody("查询Job失败"))
+		return
+	}
+
+	if job == nil {
+		resp.Write(generateSuccessBody("操作成功", nil))
+		return
+	}
+
+	type Data struct {
+		Id   string `json:"id"`
+		Body string `json:"body"`
+	}
+
+	data := Data{
+		Id:   job.Id,
+		Body: job.Body,
+	}
+
+	log.Printf("get job#%+v", data)
+
+	resp.Write(generateSuccessBody("操作成功", data))
 }
 
 type ResponseBody struct {

@@ -3,13 +3,14 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"github.com/ouqiang/delay-queue/config"
-	"github.com/ouqiang/delay-queue/delayqueue"
-	"github.com/ouqiang/delay-queue/routers"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+
+	"github.com/ouqiang/delay-queue/config"
+	"github.com/ouqiang/delay-queue/delayqueue"
+	"github.com/ouqiang/delay-queue/routers"
 )
 
 type Cmd struct{}
@@ -53,6 +54,7 @@ func (cmd *Cmd) runWeb() {
 	http.HandleFunc("/pop", routers.Pop)
 	http.HandleFunc("/finish", routers.Delete)
 	http.HandleFunc("/delete", routers.Delete)
+	http.HandleFunc("/get", routers.Get)
 
 	log.Printf("listen %s\n", config.Setting.BindAddress)
 	err := http.ListenAndServe(config.Setting.BindAddress, nil)
