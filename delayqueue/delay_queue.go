@@ -90,7 +90,7 @@ func Get(jobId string) (*Job, error) {
 	return job, err
 }
 
-// 轮询获取Job名称, 使job分布到不同bucket中, 提高扫描速度
+// 轮询获取bucket名称, 使job分布到不同bucket中, 提高扫描速度
 func generateBucketName() <-chan string {
 	c := make(chan string)
 	go func() {
@@ -162,10 +162,10 @@ func tickHandler(t time.Time, bucketName string) {
 
 		// 再次确认元信息中delay是否小于等于当前时间
 		if job.Delay > t.Unix() {
+			// 从bucket中删除旧的jobId
+			removeFromBucket(bucketName, bucketItem.jobId)
 			// 重新计算delay时间并放入bucket中
 			pushToBucket(<-bucketNameChan, job.Delay, bucketItem.jobId)
-			// 从bucket中删除之前的bucket
-			removeFromBucket(bucketName, bucketItem.jobId)
 			continue
 		}
 
