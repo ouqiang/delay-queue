@@ -11,11 +11,11 @@ import (
 	"github.com/ouqiang/delay-queue/delayqueue"
 )
 
-type PopRequest struct {
+type TopicRequest struct {
 	Topic string `json:"topic"`
 }
 
-type DeleteRequest struct {
+type IdRequest struct {
 	Id string `json:"id"`
 }
 
@@ -54,7 +54,8 @@ func Push(resp http.ResponseWriter, req *http.Request) {
 	err = delayqueue.Push(job)
 
 	if err != nil {
-		resp.Write(generateFailureBody("添加失败"))
+		log.Printf("添加job失败", err.Error())
+		resp.Write(generateFailureBody(err.Error()))
 	} else {
 		resp.Write(generateSuccessBody("添加成功", nil))
 	}
@@ -62,12 +63,12 @@ func Push(resp http.ResponseWriter, req *http.Request) {
 
 // 获取job
 func Pop(resp http.ResponseWriter, req *http.Request) {
-	var popRequest PopRequest
-	err := readBody(resp, req, &popRequest)
+	var topicRequest TopicRequest
+	err := readBody(resp, req, &topicRequest)
 	if err != nil {
 		return
 	}
-	topic := strings.TrimSpace(popRequest.Topic)
+	topic := strings.TrimSpace(topicRequest.Topic)
 	if topic == "" {
 		resp.Write(generateFailureBody("topic不能为空"))
 		return
@@ -77,7 +78,7 @@ func Pop(resp http.ResponseWriter, req *http.Request) {
 	job, err := delayqueue.Pop(topics)
 	if err != nil {
 		log.Printf("获取job失败#%s", err.Error())
-		resp.Write(generateFailureBody("获取Job失败"))
+		resp.Write(generateFailureBody(err.Error()))
 		return
 	}
 
@@ -103,35 +104,36 @@ func Pop(resp http.ResponseWriter, req *http.Request) {
 
 // 删除job
 func Delete(resp http.ResponseWriter, req *http.Request) {
-	var deleteRequest DeleteRequest
-	err := readBody(resp, req, &deleteRequest)
+	var idRequest IdRequest
+	err := readBody(resp, req, &idRequest)
 	if err != nil {
 		return
 	}
-	id := strings.TrimSpace(deleteRequest.Id)
+	id := strings.TrimSpace(idRequest.Id)
 	if id == "" {
 		resp.Write(generateFailureBody("job id不能为空"))
 		return
 	}
 
+	log.Printf("delete job#jobId-%s\n", id)
 	err = delayqueue.Remove(id)
 	if err != nil {
-		resp.Write(generateFailureBody("删除失败"))
+		log.Printf("删除job失败#%s", err.Error())
+		resp.Write(generateFailureBody(err.Error()))
 		return
 	}
-	log.Printf("delete job#jobId-%s\n", id)
 
 	resp.Write(generateSuccessBody("操作成功", nil))
 }
 
 // 查询job
 func Get(resp http.ResponseWriter, req *http.Request) {
-	var deleteRequest DeleteRequest
-	err := readBody(resp, req, &deleteRequest)
+	var idRequest IdRequest
+	err := readBody(resp, req, &idRequest)
 	if err != nil {
 		return
 	}
-	id := strings.TrimSpace(deleteRequest.Id)
+	id := strings.TrimSpace(idRequest.Id)
 	if id == "" {
 		resp.Write(generateFailureBody("job id不能为空"))
 		return
@@ -139,7 +141,7 @@ func Get(resp http.ResponseWriter, req *http.Request) {
 	job, err := delayqueue.Get(id)
 	if err != nil {
 		log.Printf("查询job失败#%s", err.Error())
-		resp.Write(generateFailureBody("查询Job失败"))
+		resp.Write(generateFailureBody(err.Error()))
 		return
 	}
 
@@ -148,19 +150,7 @@ func Get(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	type Data struct {
-		Id   string `json:"id"`
-		Body string `json:"body"`
-	}
-
-	data := Data{
-		Id:   job.Id,
-		Body: job.Body,
-	}
-
-	log.Printf("get job#%+v", data)
-
-	resp.Write(generateSuccessBody("操作成功", data))
+	resp.Write(generateSuccessBody("操作成功", job))
 }
 
 type ResponseBody struct {
