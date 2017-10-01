@@ -6,8 +6,7 @@ import (
 	"github.com/ouqiang/delay-queue/config"
 )
 
-type ReadyQueue struct{}
-
+// 添加JobId到队列中
 func pushToReadyQueue(queueName string, jobId string) error {
 	queueName = fmt.Sprintf(config.Setting.QueueName, queueName)
 	_, err := execRedisCommand("RPUSH", queueName, jobId)
@@ -15,6 +14,7 @@ func pushToReadyQueue(queueName string, jobId string) error {
 	return err
 }
 
+// 从队列中阻塞获取JobId
 func blockPopFromReadyQueue(queues []string, timeout int) (string, error) {
 	var args []interface{}
 	for _, queue := range queues {

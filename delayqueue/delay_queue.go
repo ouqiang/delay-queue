@@ -16,13 +16,14 @@ var (
 	bucketNameChan <-chan string
 )
 
+// Init 初始化延时队列
 func Init() {
 	RedisPool = initRedisPool()
 	initTimers()
 	bucketNameChan = generateBucketName()
 }
 
-// 添加一个Job到队列中
+// Push 添加一个Job到队列中
 func Push(job Job) error {
 	if job.Id == "" || job.Topic == "" || job.Delay < 0 || job.TTR <= 0 {
 		return errors.New("invalid job")
@@ -42,7 +43,7 @@ func Push(job Job) error {
 	return nil
 }
 
-// 获取Job
+// Pop 轮询获取Job
 func Pop(topics []string) (*Job, error) {
 	jobId, err := blockPopFromReadyQueue(topics, config.Setting.QueueBlockTimeout)
 	if err != nil {
@@ -71,12 +72,12 @@ func Pop(topics []string) (*Job, error) {
 	return job, err
 }
 
-// 删除Job
+// Remove 删除Job
 func Remove(jobId string) error {
 	return removeJob(jobId)
 }
 
-// 查询Job
+// Get 查询Job
 func Get(jobId string) (*Job, error) {
 	job, err := getJob(jobId)
 	if err != nil {

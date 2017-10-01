@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	// RedisPool RedisPool连接池实例
 	RedisPool *redis.Pool
 )
 

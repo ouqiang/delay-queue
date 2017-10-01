@@ -11,15 +11,17 @@ import (
 	"github.com/ouqiang/delay-queue/delayqueue"
 )
 
+// TopicRequest Job类型请求json
 type TopicRequest struct {
 	Topic string `json:"topic"`
 }
 
+// IdRequest JobId请求json
 type IdRequest struct {
 	Id string `json:"id"`
 }
 
-// 添加job
+// Push 添加job
 func Push(resp http.ResponseWriter, req *http.Request) {
 	var job delayqueue.Job
 	err := readBody(resp, req, &job)
@@ -54,14 +56,14 @@ func Push(resp http.ResponseWriter, req *http.Request) {
 	err = delayqueue.Push(job)
 
 	if err != nil {
-		log.Printf("添加job失败", err.Error())
+		log.Printf("添加job失败#%s", err.Error())
 		resp.Write(generateFailureBody(err.Error()))
 	} else {
 		resp.Write(generateSuccessBody("添加成功", nil))
 	}
 }
 
-// 获取job
+// Pop 获取job
 func Pop(resp http.ResponseWriter, req *http.Request) {
 	var topicRequest TopicRequest
 	err := readBody(resp, req, &topicRequest)
@@ -102,7 +104,7 @@ func Pop(resp http.ResponseWriter, req *http.Request) {
 	resp.Write(generateSuccessBody("操作成功", data))
 }
 
-// 删除job
+// Delete 删除job
 func Delete(resp http.ResponseWriter, req *http.Request) {
 	var idRequest IdRequest
 	err := readBody(resp, req, &idRequest)
@@ -126,7 +128,7 @@ func Delete(resp http.ResponseWriter, req *http.Request) {
 	resp.Write(generateSuccessBody("操作成功", nil))
 }
 
-// 查询job
+// Get 查询job
 func Get(resp http.ResponseWriter, req *http.Request) {
 	var idRequest IdRequest
 	err := readBody(resp, req, &idRequest)
@@ -153,6 +155,7 @@ func Get(resp http.ResponseWriter, req *http.Request) {
 	resp.Write(generateSuccessBody("操作成功", job))
 }
 
+// ResponseBody 响应Body格式
 type ResponseBody struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`

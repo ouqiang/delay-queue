@@ -4,6 +4,7 @@ import (
 	"github.com/vmihailenco/msgpack"
 )
 
+// Job 使用msgpack序列化后保存到Redis,减少内存占用
 type Job struct {
 	Topic string `json:"topic" msgpack:"1"`
 	Id    string `json:"id" msgpack:"2"`    // job唯一标识ID
